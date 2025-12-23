@@ -281,15 +281,227 @@ print("=" * 80)
 
 """
 
+A path has multiple components you often need to acess:
 
+Given: /home/user/projects/data/sales_2024.csv
 
+.parent         -> /home/user/projects/sales_2024.csv   (containing directory)
+.name           -> sales_2024.csv                       (filename with extension)
+.stem           -> sales_2024                           (filename without extension)
+.suffix         -> .csv                                  (file extension)
+.suffixes       -> ['.csv']                              (all extensions as a list)
+.parts          -> ('/', 'home', 'user', ....)            (all components as a tuple)
 
+These are properties (not methods), so no parenthees!
 
 
 """
 
+example_path = Path("/home/user/projects/data/sales_2024.csv")
+
+
+print(f"Full path: {example_path}")
+print(f"    .parent: {example_path.parent}")
+print(f"    .name: {example_path.name}")
+print(f"    .stem: {example_path.stem}")
+print(f"    .suffix: {example_path.suffix}")
+print(f"    .suffixes: {example_path.suffixes}")
+print()
+
+
+# Multiple extensions (e.g. .tar, .gz)
+
+archive = Path("backup.tar.gz")
+print(f"Archive: {archive}")
+print(f"    .suffix: {archive.suffix}")     
+print(f"    .suffixes: {archive.suffixes}")
+print(f"    .stem: {archive.stem}")
+print()
+
+
+# Navigating up the directory tree
+
+deep_path = Path("/home/user/projects/2024/data/sales.csv")
+print(f"Original: {deep_path}")
+print(f"    Parent: {deep_path.parent}")
+print(f"    Grandparent:    {deep_path.parent.parent}")
+print(f"    Great-grandparent:      {deep_path.parent.parent.parent}")
+print()
+
+
+"""
+PRACTICAL USES:
+
+Checking file extension:
+    if path.suffix.lower() == '.csv':
+        print("This is a CSV file")
+
+Building related filenames:
+    input_file = Path("data.csv")
+    output_file = input_file.parent/ f"{input_file.stem}_processed.csv"
+    # Result: data_processed.csv in same directory
+
+Getting parent directory for output:
+    output_dir = input_file.parent / "processed"
+    output_dir.mkdir(exist_ok=True)     # Create if doesn't exist
+
+"""
+
+# Part 6: Common Mistakes and Pitfalls
+
+print("\nSection 5: Common Mistakes and How to Avoid Them")
+print("-" * 80)
+
+
+"""
+MISTAKE 1: Treating paths as strings
+
+Don't split paths with string operations
+    parts = path_string.split('/')  # WRONG! Breaks on Windows
+
+Do: Use pathlib properties 
+    parts = path.parts
+
+Why: String splitting is OS-specific and fragile.
+
+
+MISTAKE 2: Trusting file extensions
+
+A file named "data.csv" might contain:
+- Actual CSV data
+- JSON data (someone renamed it)
+- A virus disguised as CSV
+- Empty content
 
 
 
+NEVER assume file content based solely on extension!
+
+Do: Check the extension, but also validate content
+    if path.suffix.lower() == '.csv':
+        # Now check if it's actuallu valid csv data
+        try:
+            df = pd.read_csv(path)
+        except Exception as e:
+            print(f"Not valid CSV despite extension: {e}")
+
+WHY: File extensions are just naming conventions, not guarantees.
 
 
+
+MISTAKE 3: Not handling exceptions
+
+Filesystem operations can fail for many reasons:
+- FileNotFoundError: Path doesn't exist
+- PermissionError: You don't have the access rights
+- IsADirectoryError: Tried to read a directory as a file
+- OSError: Disk full, network issues, etc.
+
+
+Don't assume operations will succed
+    content = path.read_text() # Crashes if file doesn't exist!
+
+
+
+Do: Use try/except blocks
+
+    try:
+        content = path.read_text()
+    except FileNotFoundError:
+        print(f"File not found: {path}")
+    except PermissionError:
+        print(f"No permission to read: {path}")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+
+
+
+ MiSTAKE 4: Assuming paths are absolute
+
+A relative path like "data/file.csv" depends on current working directory.
+If you change directories (or someone else runs your code), it breaks!
+
+Don't use relative paths without understanding context.
+    path = Path("data/file.csv")
+    # Where is this relative to? Who knows!
+
+Do: Either use absolute paths or make relative paths explicit
+    # Explicit absolute
+    path = Path("/home/user/project/data/file.csv")
+
+    # Relative to script location
+    script_dir = Path(__file__).parent
+    path = script_dir / "data" / "file.csv"
+
+    # Relative to current working directory (explicit)
+    path = Path.cwd() / "data" / "file.csv"
+"""
+
+# PART 7: Realistic Mini Example - CSV Validation
+
+
+"""
+
+Requirement:
+1. Check if the path exists
+2. Ensure it's a file (not a directory)
+3. Verify it has .csv extension
+4. Give clear, user-friendly error messages
+
+"""
+
+
+def validate_csv_path(path_string: str) -> Path | None:
+    """
+    Validate that a path points to an existing CSV file.
+
+    Args:
+        path_string: User-provided path as string
+
+    Returns:
+        Path object is valid, None if invalid (with printed messages)
+
+    Why this function:
+    - Seperates validation from business logic
+    - Provides clear user feedback
+    - Returns Path object for further processing
+    - Type hint shows return is Path or None (modern Python)
+    """
+
+    print(f"\nValidating: {path_string}")
+    print("-" * 40)
+
+    # Step 1: Convert string to Path object
+    path = Path(path_string)
+
+    # Step 2: Check existence
+    if not path.exists():
+        print(f"x Error: Path does not exist")
+        print(f" Looked for: {path.absolute()}") # Show absolute path for clarity
+        return None
+    print(f" Path exists")
+
+
+    # Step 3: Check is it's a file (not a directory)
+    if not path.is_file():
+        print(f"x Error: Path is not a file")
+        if path.is_dir():
+            print(f"    This is a directory. Did you mean to specify a file inside it?")
+        return None
+    print(f" Path is a file")
+
+
+    # Step 4: Check file extension
+    if path.suffix.lower() != '.csv':
+        print(f"x Error: File does not have .csv extension")
+        print(f" Found extension: {path.suffix or '(none)'}")
+        print(f" None: This is a saftey check. The file might still contain CSV data.")
+        return None
+    print(f" File has .csv extension")
+
+    # All checks passed!
+    print(f"\n Validation sucessful")
+    print(f"    File name: {path.name}")
+    print(f"    Full path: {path.absolute()}")
+    print(f"    Size: {path.stat().st_size}")   # Bonus: file size
+    
