@@ -1,0 +1,160 @@
+
+# =====================================================
+# YAML CONFIGURATION FILE - Pet Adoption System
+# =================================================
+# Purpose: A realisticm well-documented YAML file to practice foundational YAML syntax + structure
+
+
+# ------- Basic Configuration Section -------------
+# Purpose: Define core application identity + runtime environment  settings
+
+application:
+ name: "Paws & Claws Adoption"
+ version: "2.1.0"
+ environment: "developmemt"   # Options: development, staging, production
+
+
+ max_users: 1000               # PURPOSE: Hard cap for registered users (integer)
+ daily_limit: 250.75           # PURPOSE: Daily processing/usage limit (float)
+ is_active: true               # PURPOSE: Global on/off switch (boolean)
+ launch_date: 2024-12-15       # PURPOSE: Refrence date for launch-related behavior (date)
+
+
+# ----- Database Configuration ---------
+# Purpose: Stores DB connection details + environment-specific overrides
+database:
+ primary:
+  host: "localhost"         # Purpose: Primary DB host
+  port: 5432                # Purpose: Primary DB port
+  name: "pet_adoption_db"   # Purpose: Primary DB name
+  pool_size: 10             # Purpose: Connection pool size for concurrency
+
+ replica: { host: "replica.db.example.com", port: 5432, enabled: false } # Purpose: Optional read replica config
+
+ connections:
+  developmemt:
+   timeout: 30          # Purpose: Request timeout in dev (sconds).
+   retry_attempts: 3    # Purpose: Retry count in dev for resilience testing
+
+  
+  production:
+   timeout: 10          # Purpose: Request timeout in prod (seconds)
+   retry_attempts: 5    # PURPOSE: Retry count in prod to handle transient failures
+
+# ----- Supported Pet Types -----------
+# Purpose: Declares which pet types the system supports (used for validation/UI filters).
+supported_pets:
+ - dog
+ - cat 
+ - rabbit 
+ - bird
+
+
+# ----- Pet Categories -----
+# Purpose: Stores category-level rules (breeds, age groups, and requirements) per pet type
+pet_categories:
+ - type: "dog"
+   breeds: ["Labrador", "Poodle", "Beagle"]     # Purpose: Allowed dog breeds
+   age_groups: ["puppy", "adult", "senior"]     # Purpose: Allowed dog age groups
+   vaccination_required: true                    # Purpose: Whether vaccination is mandatory
+
+ - type: "cat"
+   breeds: ["Siamese", "Persian", "Maine Coon"]     # Purpose: Allowed cat breeds
+   age_groups: ["kitten", "adult", "senior"]        # Purpose: Allowed cat age groups
+   vaccination_required: true                       # Purpose: Whether vaccination is mandatory
+
+
+
+# ----- Adoption Rules ----------
+# Purpose: Define eligibility rules + fee structures, including YAML anchors for reuse
+adoption_rules:
+ eligibility_criteria: |
+  1. Adopter must be 21+ years old
+  2. Home visit required for certain breeds.
+  3. All pets must be spayed/neutered
+  4. Adoption fee is non-refundable
+# Purpose: Eligibility rules as a literal block (line breaks preserved)
+
+ mission_statement: >
+  Our mission is to find loving homes
+  for all animals in our care while
+  promoting responsible pet ownership.
+
+# Purpose: Human-friendly text as folded block (line breaks become spaces)
+
+ default_fees: &base_fees
+  adoption_fee: 150
+  microchip_fee: 25
+  vaccination_fee: 50
+# Purpose: Base fee template reused via anchor (&base_fee).
+
+
+ dog_fees:
+  <<: *base_fees
+  breed_specific_fee: 50
+# Purpose: Dog fees inherit base fees and add dog-specific surcharge
+ 
+ cat_fees:
+  <<: *base_fees
+  breed_specific_fee: 30
+# Purpose: Cat fees inherit base fees and add cat-specific surcharge.
+
+
+# ---------- API & External Services ----------
+# Purpose: Defines external API base URL + endpoint paths + default query parameters
+api:
+ base_url: "https://api.petadoption.example.com"      # Purpose: Root domain for API calls
+
+ endpoints:
+  get_pets: "/v1/pets"                      # Purpose: List/search pets endpoint
+  submit_application: "/v1/application"      # Purpose: Submit adoption application endpoint
+  check_status: "/v1/status/{id}"             # Purpose: Status check endpoint using path parameter
+
+default_params:
+ - limit: 20                  # Purpose: Default page size
+ - sort_by: "date_added"      # Purpose: Default sorting method
+ - include_photos: true       # Purpose: Include photos by default
+
+
+
+
+# ------- Logging Configuration --------
+# Purpose: Controls log verbosity, file targets, and rotation policies
+logging:
+ level: "INFO"          # Purpose: Default log level for the app
+ file: "logs/app.log"   # Purpose: Default log file path
+
+ rotation:
+  max_size: "10MB"      # Purpose: Rotate when log reaches this size
+  backup_count: 5       # Purpose: How many rotated logs to keep
+  when: "midnight"      # Purpose: Time-based rotation trigger
+
+# PURPOSE: Log rotation rules to prevent disk bloat
+
+loggers:
+ database:
+  level: "WARNING"
+  propogate: false
+  # PURPOSE: Reduce noisy DB logs; prevent double logginf via propogation
+
+api:
+ level: "DEBUG"
+ file: "logs/api_debug.log"
+ # Purpose: Increase visibility for API-related debugging
+
+
+# ---- Constants and Validation Rules -------
+# Purpose: Stores "magic numbers" and validation constraints used across the app
+constants:
+ adoption:
+  min_age: 21           # Purpose: Minimum adopter age
+  trial_period_days: 30  # Purpose: Return policy duration
+  max_pets_per_household: 4 # Purpose: Saftey/quality of care limit
+
+ validation:
+  min_name_length: 2    # Purpose: Minimum name length
+  max_name_length: 50   # Purpose: Maximum name length
+  phone_regex: "^\\+?[1-9]\\d{1,14}$"   # Purpose: E.164-ish phone validation regex
+
+
+
