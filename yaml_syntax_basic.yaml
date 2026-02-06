@@ -1,0 +1,107 @@
+
+
+# ============================================
+# YAML BASICS (CONSTRAINED) - Log Analyzer Config
+# ==============================================
+# Purpose: Learn only the YAML syntax you actually need for your exception-based script
+# Keep it small, predictable, and easy to validate in Python
+
+
+
+# ----------------------------
+# YAML RULES YOU MUST FOLLOW
+# ---------------------------------
+# RULE: Indentation defines structure. Use SPACES only (recommended: 2 spaces)
+# RULE: A key is written as: key: value (colon + ONE SPACE)
+# RULE: Lists use: - item (dash + ONE SPACE)
+# RULE: Strings usually don't need quotes, BUT use quotes for paths/regex/special chars
+# RULE: Booleans are: true/fasle (lowercase is safest across YAML parsers)
+# RULE: null means "no value" (same as Python None)
+# RULE: Avoid tabs. Avoid fancy YAML features (anchors, merges) for now.
+
+
+
+# --------------------------
+# 1) APPLICATION (top-level map)
+# ------------------------------
+# CONCEPT: A "map" (dictionary) is key: value lines under a parent key.
+application:
+  name: "log-analyzer"          # string (quoted for clarity)
+  environment: "development"    # string; your code can restrict allowed values
+  strict_mode: true             # boolean; if true -> treat warnings as errors (your choice)
+
+
+# -------------------------------------
+# 2) INPUT SETTINGS (nested map)
+# -------------------------------------
+# CONCEPT: Nesting happens by indenting undet a key.
+input:
+  source_type: "file"               # string; examples "file" or "stdin"
+  log_path: "./data/app.log"        # string path (quote recommended)
+  encoding: "utf-8"                 # string
+  max_lines: 50000                  # integer; hard limit to prevent huge reads
+
+
+# -------------------------------------
+# 3) PARSING (regex patterns as strings)
+#-------------------------------------
+# CONCEPT: Regex patterns should be quoted to avoid YAML interpreting characters.
+# NOTE: Backslashes must be escaped in double quotes OR use single quotes
+parsing:
+  timestamp_regex: '^d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}'  # single quotes reduce escaping pain
+  level_regex: '^\w+\s+\[(DEBUG|INFO|WARNING|ERROR|CRITICAL)\]' # example pattern
+  # If you don't know regex yet, keep patterns simple and evolve later.
+
+
+# -----------------------------------
+# 4) THRESHOLDS (numbers your script checks)
+# -------------------------------------
+# CONCEPT: Use integers/floats as plain values (no quotes)
+thresholds:
+  error_rate_max: 0.02              # float; 2% max allowed error lines
+  warning_rate_max: 0.10            # float; 10% max allowed warning lines
+  max_errors_absolute: 50           # integer; hard stop threshold 
+
+
+# ------------------------------------------------
+# 5) SAMPLING (a small, safe list)
+# -------------------------------------
+# CONCEPT: List are sequences. Each item begins with "- ".
+sampling:
+  enabled: true                     # boolean
+  modes:
+   - "head"                         # list item (string)
+   - "random"                       # list item (string)
+  random_fraction: 0.05              # float; used only when "random" is chosen
+
+
+
+# ----------------------------
+# 6) OUTPUT (where reports go)
+# ----------------------------
+# CONCEPT: Keep outputs as simple strings + booleans
+output:
+  report_dir: "./reports"           # string
+  report_format: "json"             # string; examples: "json" or "txt"
+  overwrite: false                  # boolean
+
+# -------------------------------------
+# 7) ERROR HADNLING POLICY (ties to your exception script)
+# --------------------------------------------
+# CONCEPT: This section exists to map config -> exceptions your code raises
+# Your Python script can read these and decide which exception to raise
+error_policy:
+  on_missing_file: "raise"          # string; "raise" or "warn"
+  on_invalid_encoding: "raise"      # string
+  on_bad_config: "raise"            # string; config validation failure -> raise ConfigError
+  on_parse_failure: "warn"          # string; parse filure per line -> warn or raise
+
+
+# ------------------------------------
+# 8) OPTIONAL SETTINGS (null and defaults)
+# CONCEPT: Use null when something is intentionally no set
+optional:
+  sentry_dsn: null                  # null = not configured
+  notify_email: null                # later: set to "you@example.com" if you add notification 
+
+
