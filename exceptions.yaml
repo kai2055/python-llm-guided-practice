@@ -1,0 +1,80 @@
+
+CSVNotFoundError:
+  title: "CSV file not found"
+  severity: "error"
+  log_level: "ERROR"
+  suggestions:
+    - "Check that the file path is correct"
+    - "Verify the file exists at the specified location"
+    - "Use absolute path if relative path does not work"
+
+
+InvalidCSVFormatError:
+  title: "Invalid CSV file format"
+  severity: "error"
+  log_level: "ERROR"
+  suggestions:
+    - "Ensure the file has a .csv extension"
+    - "Verify it's a CSV file, not a directory"
+    - "Check the file isn't corrupted"
+
+
+CSVReadError:
+  title: "Cannot read CSV file"
+  severity: "error"
+  log_level: "ERROR"
+  suggestions: 
+    - "Check if the file is open in another program"
+    - "Verify you have read permissions"
+    - "ENsure the file isn't corrupted"
+
+
+DuplicateRowsExceededError:
+  title: "Too  many duplicate rows detected"
+  severity: "error"
+  log_level: "ERROR"
+  suggestions:
+    - "Review and remove duplicate entries"
+    - "Check if duplicates are intentional"
+    - "Consider adjusting threshold in config.yaml if needed"
+
+
+
+MissingValuesError:
+  title: "Too many missing values detected"
+  severity: "error"
+  log_level: "ERROR"
+  suggestions:
+    - "Fill in missing values where possible"
+    - "Remove rows/columns with excessive missing data"
+    - "Consider if missing data is acceptable for your use case"
+
+
+WhiteSpacePollutionError:
+  title: "Excessive whitespace pollution detected"
+  severity: "error"
+  log_level: "ERROR"
+  suggestions:
+    - "Clean whitespace from affected columns"
+    - "Use Excel/Sheets to trim cell values"
+    - "Consider data cleaning scripts"
+
+
+ReportGenerationError:
+  title: "Failed to generate report"
+  severity: "error"
+  log_level: "ERROR"
+  suggestions:
+    - "Check that you have write permissions"
+    - "Ensure output directory is accessible"
+    - "Verify disk space is available"
+
+
+UnexpectedError:
+  title: "Unexpected error occured"
+  severity: "critical"
+  log_level: "CRITICAL"
+  suggestions:
+    - "Check the log file for more details"
+    - "Verify all requirements are installed"
+    - "Report this error if it persists"
