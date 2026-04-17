@@ -119,7 +119,99 @@ s = common_list([1,2,2,3,4], [2,3,3,5] )
 
 print(s)
     
-            
+
+# Given a list of student dicts with name, score, subject.
+# Return a dict mapping each subject to a list of passing
+# students (score >= 50)
+
+
+students = [
+    {"name":"Anna","score":72,"subject":"Math"},
+    {"name":"Ben","score":45,"subject":"Science"},
+    {"name":"Clara","score":88,"subject":"Math"},
+    {"name":"David","score":55,"subject":"Science"},
+    {"name":"Eva","score":39,"subject":"Math"},
+    {"name":"Faraz","score":91,"subject":"Science"},
+    {"name":"Gita","score":60,"subject":"Math"},
+]
+
+# Output {"Math":["Anna","Clara","Gita"],"Science":["David","Faraz"]}
+
+
+def pass_student_filter(students: list) -> dict:
+    """
+    Function that takes list of students and filters out the passed student
+
+    Args:
+        students (list): List of the students with their name, score and subject
+
+    Returns:
+        dict: dictionary containing the name of student that have passed in their respective subjects
+
+    """
+
+    passed_students = {}
+
+    for student in students:
+        if student["score"] >= 50:
+            if student["subject"] not in passed_students:
+                passed_students[student["subject"]] = []
+
+            passed_students[student["subject"]].append(student["name"])
+
+
+    return passed_students
+
+
+student_names = pass_student_filter(students)
+
+print(student_names)
+
+
+
+# Function that takes a string and returns the word with their frequency
+
+
+text = "the cat sat on the mat the cat sat"
+
+# Output [("the",3),("cat",2)]
+
+
+def top_n_words(sentence:str) -> list:
+    """
+    Function that takes a string and returns the word frequency
+
+    Args:
+        sentenct (str): The string with various words
+
+    Returns:
+        list: List with the words and their frequency
+        
+    
+    """
+
+    words = sentence.split()
+    word_frequency = []
+    seen = []
+    
+
+    for word in words:
+        if word not in seen:
+            count = 0
+            for i in range(0, len(words)):
+                if words[i] == word:
+                    count = count + 1
+            seen.append(word)
+            word_frequency.append((word, count))
+    return word_frequency
+
+
+result = top_n_words(text)
+print(result)
+
+
+
+
 
 
 
