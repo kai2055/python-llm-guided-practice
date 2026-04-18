@@ -211,6 +211,53 @@ print(result)
 
 
 
+# Given a list of dicts with city, department, name - return a nested dict
+# grouping first by city, then by department and then a list of names
+
+employees = [
+    {"city":"Berlin","dept":"Eng","name":"Zara"},
+    {"city":"Berlin","dept":"Eng","name":"Alex"},
+    {"city":"Berlin","dept":"HR","name":"Mia"},
+    {"city":"Munich","dept":"Eng","name":"Tom"},
+]
+
+def employees_city_sorting(employees: list)-> dict:
+    """
+    Function that takes a list with employee information and 
+    sorts them on the basis on city, department
+    
+
+    Args:
+        employees: list that contains employee information
+        in inner dictionary
+
+    Returns:
+        dict: dictionary with employees sorted on the basis of 
+        city and department
+    """
+
+    city = {}
+
+    for employee in employees:
+        if employee["city"] not in city:
+            city[employee["city"]] = {}
+        
+        if employee["dept"] not in city[employee["city"]]:
+            city[employee["city"]][employee["dept"]] = []
+
+        city[employee["city"]][employee["dept"]].append(employee["name"])
+    
+    return city
+
+
+
+sorted_employee = employees_city_sorting(employees)
+
+print(sorted_employee)
+            
+
+
+
 
 
 
