@@ -77,3 +77,7 @@ def demo_vectorization() -> None:
 
 compare_dtypes(n_rows=100_000, n_features=50)
 demo_vectorization()
+
+
+
+
