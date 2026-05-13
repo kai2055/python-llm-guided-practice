@@ -207,3 +207,149 @@ print("\nGroupBy multi-agg:\n", agg)
 big_depts = df_clean.groupby("department").filter(lambda g: len(g) > 1)
 print("\nDepts with >1 person:\n", big_depts)
 
+
+# MERGING / JOINING DATAFRAMES
+
+# Analogy: VLOOKUP in Excel, or SQL JOINs.
+# You have two tables; you want to combine on a shared key column
+
+print("\n------------------MERGING----------------\n")
+
+dept_info = pd.DataFrame({
+    "department": ["HR",  "Eng",   "Mrkt"],
+    "budget_k": [200,   500,    150],
+    "location": ["Berlin", "Munich", "Hamburg"],
+})
+
+
+# Inner join - only rows whose department exists in BOTH tables
+merged_inner = pd.merge(df_clean, dept_info, on="department", how="inner")
+print("Inner merge:\n", merged_inner[["name", "department", "budget_k", "location"]])
+
+# Left join - keep ALL roes from df_clean, NaN if no match in dept_info
+merged_left = pd.merge(df_clean, dept_info, on="department", how="left")
+print("\nLeft merge shape:", merged_left)
+
+# how="outer" keeps all rows from both tables
+# how="right" keeps all rows from the right table
+
+
+
+
+# RESHAPING - PIVOT & MELT
+
+# Analogy: transposing or restructuring a table layout.
+# pivot_table = Excel PivotTable
+# melt = "unpivot" (wide format -> long format, needed for many ML libs)
+
+print("\n-------RESHAPING------\n")
+
+# pivot_table: rows = department, columns=active, values=avg salary
+pt = df_clean.pivot_table(
+    values="salary",
+    index="department",
+    columns="active",
+    aggfunc="mean",
+)
+
+print("Pivot table (salary by dept & active:\n)", pt)
+
+# melt: turn columns into rows (wide -> long)
+# Useful when you have time-series columns like day1, day2, day3
+
+wide = pd.DataFrame({
+    "name":  ["Alice", "bob"],
+    "jan":  [5000,  6000],
+    "feb": [5200,    6100],
+})
+
+long = wide.melt(id_vars="name", var_name="month", value_name="revenue")
+print("\nMelted (wide -> long):\n", long)
+
+
+
+
+# STRING OPERATIONS WITH .str ACCESSOR
+
+# Analogy: Excel's text functions (TRIM, UPPER, LEN, SUBSTITUTE) - but
+# applied to an entire column at once without looping
+
+print("\n----- STRING OPERATIONS-----\n")
+
+names = pd.Series(["     nikhil adhikari ",  "FLYIN MONK  ", "carol    "])
+print("strip + lower:\n", names.str.strip().str.lower())
+print("contains 'bob' (case-insensitive:\n)",
+      names.str.lower().str.contains("bob"))
+print("split on space:\n", names.str.strip().str.split())
+print("length:\n", names.str.strip().str.len())
+
+
+
+# DATETIME OPERATIONS
+
+# Analogy: Excel's date functions (DATE, MONTH, WEEKDAY) - but vectorised.
+# Critical for time-series drift detection (PSI over time windows)
+
+
+print("\n------ DATETIME-------\n")
+
+
+dates = pd.to_datetime(["2024-01-15", "1999-02-02", "2024-11-05"])
+s = pd.Series(dates)
+
+print("Year:\n",              s.dt.year)
+print("Month:\n",                   s.dt.month)
+print("Day of week:\n",             s.dt.day_name())
+print("Days since first:\n",     s - s.min())
+
+
+
+# APPLY, MAP, VECTORISED OPERATIONS
+
+
+# Three ways to transform data - ordered from slowest to fastest:
+
+# .apply(fn)            - runs fn on each row or column. Flexible, slower.
+# .map(dict/fn)         - element-wose on a Series. Great for re-coding categories
+# vectorised ops        - use pandas/numpy directly (df["x"] * 2). ALWAYS prefer
+
+
+print("\n------ APPLY / MAP / VECTORISED----\n")
+
+# Vectorised - fastest, always prefer when possible
+df_clean["salary_usd"] = df_clean["salary"] * 1.08  # EUR -> USD
+print("Vectorised salary conversion:\n", df_clean[["name", "salary", "salary_usd"]])
+
+# .map - recode a category column to numbers (label encoding)
+
+dept_map = {"HR": 0, "Eng": 1, "Mrkt": 2}
+df_clean["dept_encoded"] = df_clean["department"].map(dept_map)
+print("\nDept label-encoded:\n", df_clean[["department", "dept_encoded"]])
+
+# .apply with a custom function across rows (axis=1)
+
+def salary_band(row):
+    if row["salary"] >= 80000:
+        return "high"
+    elif row["salary"] >= 50000:
+        return "mid"
+    else:
+        return "low"
+    
+df_clean["band"] = df_clean.apply(salary_band, axis=1)
+print("\nSalary bands:\n", df_clean[["name", "salary", "band"]])
+
+
+# VALUE COUNTS & UNIQUE VALUES
+
+# Analogy: Excel's COUNTIF + unique value list in one call.
+
+print("\n----- VALUE COUNTS -----\n")
+
+print("Department counts:\n", df_clean["department"].value_counts())
+print("\nUnique departments:", df_clean["department"].unique())
+print("N unique:",           df_clean["department"].nunique())
+
+
+
+
